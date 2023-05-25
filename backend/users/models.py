@@ -3,7 +3,10 @@ from django.db import models
 
 
 class User(AbstractUser):
+    """Модель пользователя"""
     email = models.EmailField('Электронная почта', max_length=254, unique=True)
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         constraints = [
@@ -21,6 +24,7 @@ class User(AbstractUser):
 
 
 class Subscribe(models.Model):
+    """Модель подписки"""
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

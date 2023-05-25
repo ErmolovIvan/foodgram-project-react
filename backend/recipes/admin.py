@@ -1,4 +1,4 @@
-from django.contrib.admin import ModelAdmin, TabularInline, register
+from django.contrib.admin import ModelAdmin, TabularInline, register, display
 
 from .models import (Favorite, Ingredient, RecipeIngredient, Recipe,
                      ShoppingCart, Tag)
@@ -19,17 +19,17 @@ class IngredientAdmin(ModelAdmin):
     ordering = ('name',)
 
 
-class RecipeIngredient(TabularInline):
-    model = RecipeIngredient
-    min_num = 1
-    extra = 1
+@register(RecipeIngredient)
+class RecipeIngredientAdmin(ModelAdmin):
+    list_display = ('pk', 'recipe', 'ingredient', 'amount')
+    list_editable = ('recipe', 'ingredient', 'amount')
 
 
 @register(Recipe)
 class RecipeAdmin(ModelAdmin):
-    list_display = ('name', 'author', 'tags')
-    list_filter = ['name', 'author', 'tags']
-    inlines = (RecipeIngredient,)
+    list_display = ('pk', 'name', 'author')
+    list_filter = ('name', 'author', 'tags')
+    empty_value_display = '-пусто-'
 
 
 @register(ShoppingCart)

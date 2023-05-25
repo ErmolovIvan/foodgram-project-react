@@ -5,6 +5,7 @@ from users.models import User
 
 
 class Tag(models.Model):
+    """Модель тегов"""
     name = models.CharField('Название', max_length=200)
     color = models.CharField(
         'Цветовой НЕХ-код',
@@ -29,6 +30,7 @@ class Tag(models.Model):
 
 
 class Ingredient(models.Model):
+    """Модель ингредиентов"""
     name = models.CharField('Название', max_length=200)
     units = models.CharField('Единицы измерения', max_length=200)
 
@@ -94,6 +96,7 @@ class Recipe(models.Model):
 
 
 class RecipeIngredient(models.Model):
+    """Модель рецептов-ингредиентов"""
 
     ingredient = models.ForeignKey(
         Ingredient,
@@ -130,6 +133,7 @@ class RecipeIngredient(models.Model):
 
 
 class ShoppingCart(models.Model):
+    """Модель корзины"""
 
     user = models.ForeignKey(
         User,
@@ -160,6 +164,7 @@ class ShoppingCart(models.Model):
 
 
 class Favorite(models.Model):
+    """Модель избранного"""
 
     user = models.ForeignKey(
         User,
