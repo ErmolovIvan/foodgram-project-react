@@ -113,23 +113,28 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
 class SubscribeSerializer(serializers.ModelSerializer):
     """Сериализатор подписок"""
-    email = serializers.EmailField(read_only=True)
-    username = serializers.CharField(read_only=True)
-    is_subscribed = serializers.SerializerMethodField()
-    recipes = RecipeSerializer(many=True, read_only=True)
-    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
-        model = User
-        fields = ('email', 'id',
-                  'username', 'first_name',
-                  'last_name', 'is_subscribed',
-                  'recipes', 'recipes_count')
+        model = Subscribe
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Subscribe.objects.all(),
+                fields=('user', 'author'),
+                message='Вы уже подписаны на этого пользователя'
+            )
+        ]
 
     def validate(self, value):
-        if self.context['request'].user == value:
-            raise serializers.ValidationError({'errors': 'Ошибка подписки'})
+        request = self.context.get('request')
+        if request.user == value['author']:
+            raise serializers.ValidationError(
+                'Нельзя подписываться на самого себя!'
+            )
         return value
+
+    def create(self, validated_data):
+        return Subscribe.objects.create(**validated_data)
 
     def get_is_subscribed(self, value):
         return (
@@ -300,3 +305,33 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return RecipeListSerializer(instance, context=self.context).data
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    """Сериализатор избранного"""
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже добавлен в избранное'
+            )
+        ]
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    """Сериализатор корзины"""
+
+    class Meta:
+        model = ShoppingCart
+        fields = '__all__'
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=ShoppingCart.objects.all(),
+                fields=('user', 'recipe'),
+                message='Рецепт уже добавлен в корзину'
+            )
+        ]

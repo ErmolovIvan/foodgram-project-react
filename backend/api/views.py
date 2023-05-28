@@ -6,7 +6,7 @@ from rest_framework import filters, status, viewsets, views
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from recipes.models import (Tag, Ingredient,Recipe, RecipeIngredient,
+from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Favorite)
 from users.models import User, Subscribe
 
@@ -18,7 +18,8 @@ from .serializers import (UserListSerializer, SignUpSerializer,
                           SetPasswordSerializer, SubscriptionsSerializer,
                           SubscribeSerializer, TagSerializer,
                           IngredientSerializer, RecipeListSerializer,
-                          RecipeCreateSerializer, RecipeSerializer)
+                          RecipeCreateSerializer, RecipeSerializer,
+                          FavoriteSerializer, ShoppingCartSerializer)
 
 
 class UserViewSet(CreateListRetrieveViewSet):
@@ -81,9 +82,8 @@ class UserViewSet(CreateListRetrieveViewSet):
 
         if request.method == 'POST':
             serializer = SubscribeSerializer(
-                author,
-                data=request.data,
-                context={"request": request}
+                data={'user': request.user.id, 'author': author.id},
+                context={'request': request},
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -111,10 +111,10 @@ class TagViewSet(ListRetrieveViewSet):
 class IngredientViewSet(ListRetrieveViewSet):
     """Вьюсет ингредиентов"""
     queryset = Ingredient.objects.all()
-    permission_classes = (AllowAny, )
+    permission_classes = (AllowAny,)
     serializer_class = IngredientSerializer
-    filter_backends = (filters.SearchFilter, )
-    search_fields = ('^name', )
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('^name',)
     pagination_class = None
 
 
@@ -138,8 +138,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=kwargs['pk'])
 
         if request.method == 'POST':
-            serializer = RecipeSerializer(
-                recipe, data=request.data,
+            serializer = FavoriteSerializer(
+                data={'user': request.user.id, 'recipe': recipe.id},
                 context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
@@ -164,10 +164,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=kwargs['pk'])
 
         if request.method == 'POST':
-            serializer = RecipeSerializer(
-                recipe,
-                data=request.data,
-                context={"request": request}
+            serializer = ShoppingCartSerializer(
+                data={'user': request.user.id, 'recipe': recipe.id},
+                context={'request': request}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
