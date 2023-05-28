@@ -14,13 +14,13 @@ def ingredient_create(row):
 
 
 class Command(BaseCommand):
-    help = "Load ingredients to DB"
+    help = 'Load ingredients to DB'
 
     def handle(self, *args, **options):
-        path = os.path.join(settings.BASE_DIR, 'ingredients.csv')
+        path = os.path.join(settings.BASE_DIR, '../data/', 'ingredients.csv')
         with open(path, 'r', encoding='utf-8') as file:
             reader = csv.reader(file)
             next(reader)
             for row in reader:
                 ingredient_create(row)
-        self.stdout.write("[!] The ingredients has been loaded successfully.")
+        self.stdout.write('The ingredients has been loaded successfully.')
