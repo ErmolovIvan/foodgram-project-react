@@ -133,9 +133,6 @@ class SubscribeSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def create(self, validated_data):
-        return Subscribe.objects.create(**validated_data)
-
     def get_is_subscribed(self, value):
         return (
                 self.context.get('request').user.is_authenticated
