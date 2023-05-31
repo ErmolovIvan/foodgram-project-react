@@ -77,5 +77,6 @@ jobs:
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             
             sudo docker-compose up -d
+            sudo docker-compose exec -T web python manage.py migrate
             sudo docker-compose exec -T web python manage.py collectstatic --noinput
             sudo docker-compose exec -T web python manage.py load_data
