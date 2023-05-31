@@ -222,11 +222,12 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
     def get_is_in_shopping_cart(self, obj):
-        return (self.context.get('request').user.is_authenticated
+        return (
+                self.context.get('request').user.is_authenticated
                 and ShoppingCart.objects.filter(
             user=self.context['request'].user,
             recipe=obj).exists()
-                )
+        )
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
