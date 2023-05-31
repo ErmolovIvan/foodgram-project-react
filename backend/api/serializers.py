@@ -56,6 +56,7 @@ class SignUpSerializer(UserCreateSerializer):
 
 class RecipeShortSerializer(serializers.ModelSerializer):
     """Сериализатор для работы с краткой информацией о рецепте"""
+
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
@@ -225,9 +226,9 @@ class RecipeListSerializer(serializers.ModelSerializer):
         return (
                 self.context.get('request').user.is_authenticated
                 and ShoppingCart.objects.filter(
-            user=self.context['request'].user,
-            recipe=obj).exists()
-        )
+                    user=self.context['request'].user,
+                    recipe=obj).exists()
+            )
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
