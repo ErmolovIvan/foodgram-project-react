@@ -1,6 +1,6 @@
 name: Django-app YamDB workflow
 
-on: [push]
+on: [ push ]
 
 jobs:
   build_and_push_app_to_docker_hub:
