@@ -3,8 +3,8 @@
 Ссылка - http://51.250.24.199/
 
 Для админки:
-Логин admin@admin.ru
-Пароль admin
+Логин - admin@admin.ru 
+Пароль - admin
 
 ![Github actions](https://github.com/ErmolovIvan/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
@@ -13,7 +13,7 @@
 ## Авторы
 Проект создан: 
 
--Ермолов Иван [Ермолов Иван](https://https://github.com/ErmolovIvan/)
+- [Ермолов Иван](https://https://github.com/ErmolovIvan/)
 
 ## Список технологий
 
