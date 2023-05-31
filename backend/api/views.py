@@ -6,98 +6,51 @@ from rest_framework import filters, status, viewsets, views
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from recipes.models import (Tag, Ingredient, Recipe, RecipeIngredient,
                             ShoppingCart, Favorite)
 from users.models import User, Subscribe
-
 from .filters import RecipeFilter
-from .mixins import CreateListRetrieveViewSet, ListRetrieveViewSet
+from .mixins import ListViewSet, ListRetrieveViewSet
 from .pagination import CustomPaginator
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (UserListSerializer, SignUpSerializer,
-                          SetPasswordSerializer, SubscriptionsSerializer,
-                          SubscribeSerializer, TagSerializer,
-                          IngredientSerializer, RecipeListSerializer,
-                          RecipeCreateSerializer, RecipeSerializer,
+from .serializers import (SubscriptionsSerializer, SubscribeSerializer,
+                          TagSerializer, IngredientSerializer,
+                          RecipeListSerializer, RecipeCreateSerializer,
                           FavoriteSerializer, ShoppingCartSerializer)
 
 
-class UserViewSet(CreateListRetrieveViewSet):
-    """Вьюсет пользователя"""
-    queryset = User.objects.all()
-    permission_classes = (AllowAny,)
-    pagination_class = CustomPaginator
-
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return UserListSerializer
-        return SignUpSerializer
-
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=(IsAuthenticated,)
-    )
-    def me(self, request):
-        serializer = UserListSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False,
-        methods=['post'],
-        permission_classes=(IsAuthenticated,)
-    )
-    def set_password(self, request):
-        serializer = SetPasswordSerializer
-        if serializer.is_valid():
-            serializer.save()
-        return Response(
-            {'detail': 'Пароль успешно изменен!'},
-            status=status.HTTP_204_NO_CONTENT
-        )
-
-    @action(
-        detail=False,
-        methods=['get'],
-        permission_classes=(IsAuthenticated,),
-        pagination_class=CustomPaginator
-    )
-    def subscriptions(self, request):
-        queryset = User.objects.filter(subscribing__user=request.user)
-        page = self.paginate_queryset(queryset)
-        serializer = SubscriptionsSerializer(
-            page,
-            many=True,
+class SubscribeView(APIView):
+    """Подписка на пользователя"""
+    def post(self, request, user_id):
+        author = get_object_or_404(User, id=user_id)
+        serializer = SubscribeSerializer(
+            data={'user': request.user.id, 'author': author.id},
             context={'request': request}
         )
-        return self.get_paginated_response(serializer.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        permission_classes=(IsAuthenticated,)
-    )
-    def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=kwargs['pk'])
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        if request.method == 'POST':
-            serializer = SubscribeSerializer(
-                data={'user': request.user.id, 'author': author.id},
-                context={'request': request},
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+    def delete(self, request, user_id):
+        author = get_object_or_404(User, id=user_id)
+        get_object_or_404(
+            Subscribe,
+            user=request.user,
+            author=author.id
+        ).delete()
 
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-        get_object_or_404(Subscribe, user=request.user,
-                          author=author).delete()
 
-        return Response({'detail': 'Успешная отписка'},
-                        status=status.HTTP_204_NO_CONTENT)
+class SubscriptionsView(ListViewSet):
+    """Список подписок"""
+    serializer_class = SubscriptionsSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(subscribing__user=self.request.user)
 
 
 class TagViewSet(ListRetrieveViewSet):
@@ -125,7 +78,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = CustomPaginator
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
-    http_method_names = ['get', 'post', 'patch', 'create', 'delete']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -153,7 +106,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         get_object_or_404(Favorite, user=request.user, recipe=recipe).delete()
 
         return Response(
-            {'detail': 'Рецепт удален из избранного.'},
+            {'detail': 'Рецепт успешно удален из избранного.'},
             status=status.HTTP_204_NO_CONTENT
         )
 
@@ -187,6 +140,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             status=status.HTTP_204_NO_CONTENT
         )
 
+    @action(detail=False, methods=['get'],
+            permission_classes=(IsAuthenticated,),
+            pagination_class=None)
     def download_shopping_cart(self, request, **kwargs):
         filename = 'foodgram_shopping_cart.txt'
         ingredients = (
@@ -197,7 +153,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             .values_list(
                 'ingredient__name',
                 'total_amount',
-                'ingredient__measurement_unit'
+                'ingredient__units'
             )
         )
         file_list = []

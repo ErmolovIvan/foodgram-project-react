@@ -10,10 +10,15 @@ router.register(
     basename='ingredients'
 )
 router.register(r'recipes', views.RecipeViewSet, basename='recipes')
-router.register(r'users', views.UserViewSet, basename='users')
 
 
 urlpatterns = [
+    path(
+        'users/subscriptions/',
+        views.SubscriptionsView.as_view({'get': 'list'})
+    ),
+    path('users/<int:user_id>/subscribe/', views.SubscribeView.as_view()),
     path('', include(router.urls)),
-    path(r'auth/', include('djoser.urls.authtoken')),
+    path('', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
 ]
