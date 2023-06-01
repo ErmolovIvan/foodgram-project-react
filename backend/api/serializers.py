@@ -27,7 +27,7 @@ class UserListSerializer(UserSerializer):
 
         return (
                 request.user.is_authenticated
-                and request.user.subscriber.filter(author=value).exist()
+                and request.user.subscriber.filter(author=value).exists()
         )
 
 
@@ -108,7 +108,7 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
 
         return (
                 request.user.is_authenticated
-                and request.user.subscriber.filter(author=value).exist()
+                and request.user.subscriber.filter(author=value).exists()
         )
 
     def get_recipes_count(self, value):
@@ -155,7 +155,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
         return (
                 request.user.is_authenticated
-                and request.user.subscriber.filter(author=value).exist()
+                and request.user.subscriber.filter(author=value).exists()
         )
 
     def to_representation(self, instance):
@@ -223,7 +223,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
         return (
                 request.user.is_authenticated
-                and request.user.favorite.filter(recipe=value).exist()
+                and request.user.favorite.filter(recipe=value).exists()
         )
 
     def get_is_in_shopping_cart(self, value):
@@ -231,7 +231,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
 
         return (
                 request.user.is_authenticated
-                and request.user.shopping_cart.filter(recipe=value).exist()
+                and request.user.shopping_cart.filter(recipe=value).exists()
         )
 
 
