@@ -24,10 +24,11 @@ class UserListSerializer(UserSerializer):
 
     def get_is_subscribed(self, value):
         request = self.context.get('request')
-        return (request.user.is_authenticated
-                and Subscribe.objects.filter(
-                    user=request.user, author=value
-                ).exists())
+
+        return (
+                request.user.is_authenticated
+                and request.user.subscriber.filter(author=value).exist()
+        )
 
 
 class SignUpSerializer(UserCreateSerializer):
@@ -103,10 +104,11 @@ class SubscriptionsSerializer(serializers.ModelSerializer):
         )
 
     def get_is_subscribed(self, value):
+        request = self.context.get('request')
+
         return (
-                self.context.get('request').user.is_authenticated
-                and Subscribe.objects.filter(user=self.context['request'].user,
-                                             author=value).exists()
+                request.user.is_authenticated
+                and request.user.subscriber.filter(author=value).exist()
         )
 
     def get_recipes_count(self, value):
@@ -149,10 +151,11 @@ class SubscribeSerializer(serializers.ModelSerializer):
         return value
 
     def get_is_subscribed(self, value):
+        request = self.context.get('request')
+
         return (
-                self.context.get('request').user.is_authenticated
-                and Subscribe.objects.filter(user=self.context['request'].user,
-                                             author=value).exists()
+                request.user.is_authenticated
+                and request.user.subscriber.filter(author=value).exist()
         )
 
     def to_representation(self, instance):
@@ -215,20 +218,21 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'is_in_shopping_cart'
         )
 
-    def get_is_favorited(self, obj):
+    def get_is_favorited(self, value):
+        request = self.context.get('request')
+
         return (
-                self.context.get('request').user.is_authenticated
-                and Favorite.objects.filter(user=self.context['request'].user,
-                                            recipe=obj).exists()
+                request.user.is_authenticated
+                and request.user.favorite.filter(recipe=value).exist()
         )
 
-    def get_is_in_shopping_cart(self, obj):
+    def get_is_in_shopping_cart(self, value):
+        request = self.context.get('request')
+
         return (
-                self.context.get('request').user.is_authenticated
-                and ShoppingCart.objects.filter(
-                    user=self.context['request'].user,
-                    recipe=obj).exists()
-            )
+                request.user.is_authenticated
+                and request.user.shopping_cart.filter(recipe=value).exist()
+        )
 
 
 class RecipeIngredientCreateSerializer(serializers.ModelSerializer):
@@ -280,6 +284,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 'Ингредиенты должны быть уникальны.'
             )
+
         return value
 
     @staticmethod
@@ -338,6 +343,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         request = self.context.get('request')
+
         return RecipeShortSerializer(
             instance.recipe,
             context={'request': request}
